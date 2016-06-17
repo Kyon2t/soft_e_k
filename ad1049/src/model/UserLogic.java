@@ -2,18 +2,18 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package java.model;
+package model;
 
-import java.dao.UserDAO;
+import dao.UserDAO;
 
 /**
  *
  * @author g14910he
  */
-public class LoginLogic {
-    public boolean execute(Login login){
+public class UserLogic {
+    public boolean addUser(User user){
         UserDAO dao = new UserDAO();
-        User user = dao.findByLogin(login);
-        return user != null;
+        boolean use = dao.addUser(user);
+        return use;
     }
 }

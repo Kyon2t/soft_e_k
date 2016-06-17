@@ -2,10 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package java.servlet;
+package servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -13,14 +14,24 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.model.Result;
+
+import dao.DataDAO;
+import model.Data;
+import model.Game;
+import model.Quest;
+import model.Result;
 
 /**
  *
  * @author g14949tk
  */
-//web.xml(name = "ResultServlet", urlPatterns = {"/ResultServlet"})
-public class ResultServlet extends HttpServlet {
+//web.xml(name = "GameServlet", urlPatterns = {"/GameServlet"})
+public class GameServlet extends HttpServlet {
+    public String answer;
+    public List<Data> presentGame;
+    public int answerA;
+    public int answerB;
+    long start;
 
     /**
      * Processes requests for both HTTP
@@ -40,10 +51,10 @@ public class ResultServlet extends HttpServlet {
             /* TODO output your page here. You may use following sample code. */
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ResultServlet</title>");            
+            out.println("<title>Servlet GameServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ResultServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet GameServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         } finally {            
@@ -66,14 +77,50 @@ public class ResultServlet extends HttpServlet {
             throws ServletException, IOException {
         String forwardPath = null;       
         String action = request.getParameter("action");
-        if(action.equals("a")){//ゲームに戻る
-            forwardPath = "/WEB-INF/jsp/loginDone.jsp";
-        }
-        else if(action.equals("b")){//ログオフする
+        DataDAO dada = new DataDAO();
+        dada.findAll(); 
+        boolean isRunning = true;
+        Game g;
+        Quest quest;
+        Result r;
+        long now = 0;
+        int count = 0;
+        while(isRunning){
+            now = System.currentTimeMillis();
+            if(now>20000+start){
+                break;
+            }
+            if(action == null){
+                forwardPath = "/WEB-INF/jsp/game.jsp";
+            }else if(action.equals("a")){
+                HttpSession session = request.getSession();
+                Quest q = (Quest)session.getAttribute("quest");
+                r = (Result)session.getAttribute("result");
+                if(q.getAnswer()== 100){r.countUp();}
+                session.setAttribute("result",r);
+                session.removeAttribute("quest");
+            }else if(action.equals("b")){
+                HttpSession session = request.getSession();
+                Quest q = (Quest)session.getAttribute("quest");
+                r = (Result)session.getAttribute("result");
+                if(q.getAnswer()== 200){r.countUp();}
+                session.setAttribute("result",r);
+                session.removeAttribute("quest");
+            }
+            presentGame = dada.getList();
+            g = new Game(presentGame);
+            String q1 = g.getQuest1();
+            String q2 = g.getQuest2();
+            int ans = g.getAnswer();
+            quest = new Quest(q1, q2,ans);
+            request.setCharacterEncoding("UTF-8");
             HttpSession session = request.getSession();
-            session.invalidate();
-            forwardPath = "/WEB-INF/jsp/logout.jsp";
+            session.setAttribute("quest",quest);
+            forwardPath = "/WEB-INF/jsp/game.jsp";
+            RequestDispatcher dispatcher = request.getRequestDispatcher(forwardPath);
+            dispatcher.forward(request, response);
         }
+        forwardPath = "/WEB-INF/jsp/game.jsp";
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardPath);
         dispatcher.forward(request, response);
     }
@@ -90,8 +137,20 @@ public class ResultServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        start = System.currentTimeMillis();
+        DataDAO dada = new DataDAO();
+        dada.findAll();
+        presentGame = dada.getList();
+        Game g = new Game(presentGame);
+        String q1 = g.getQuest1();
+        String q2 = g.getQuest2();
+        int ans = g.getAnswer();
+        Quest quest = new Quest(q1, q2, ans);
+        Result rs = new Result(0);
         HttpSession session = request.getSession();
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
+        session.setAttribute("quest",quest);
+        session.setAttribute("result",rs);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/game.jsp");
         dispatcher.forward(request, response);
     }
 

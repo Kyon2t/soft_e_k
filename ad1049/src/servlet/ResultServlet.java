@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package java.servlet;
+package servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,13 +12,16 @@ import javax.servlet.http.*;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import model.Result;
 
 /**
  *
  * @author g14949tk
  */
-//web.xml(name = "LogoutServlet", urlPatterns = {"/LogoutServlet"})
-public class LogoutServlet extends HttpServlet {
+//web.xml(name = "ResultServlet", urlPatterns = {"/ResultServlet"})
+public class ResultServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP
@@ -38,10 +41,10 @@ public class LogoutServlet extends HttpServlet {
             /* TODO output your page here. You may use following sample code. */
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet LogoutServlet</title>");            
+            out.println("<title>Servlet ResultServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet LogoutServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ResultServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         } finally {            
@@ -62,7 +65,17 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/index.jsp");
+        String forwardPath = null;       
+        String action = request.getParameter("action");
+        if(action.equals("a")){//ゲームに戻る
+            forwardPath = "/WEB-INF/jsp/loginDone.jsp";
+        }
+        else if(action.equals("b")){//ログオフする
+            HttpSession session = request.getSession();
+            session.invalidate();
+            forwardPath = "/WEB-INF/jsp/logout.jsp";
+        }
+        RequestDispatcher dispatcher = request.getRequestDispatcher(forwardPath);
         dispatcher.forward(request, response);
     }
 
@@ -78,6 +91,9 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/result.jsp");
+        dispatcher.forward(request, response);
     }
 
     /**

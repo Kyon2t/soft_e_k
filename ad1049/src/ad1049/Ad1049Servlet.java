@@ -1,4 +1,4 @@
-package com.ad1049;
+package ad1049;
 
 import java.io.IOException;
 import javax.servlet.http.*;
